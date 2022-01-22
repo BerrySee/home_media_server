@@ -1,0 +1,95 @@
+version: "2.1"
+services:
+  qbittorrent:
+    image: ghcr.io/linuxserver/qbittorrent
+    container_name: qbittorrent
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+      - WEBUI_PORT=8080
+    volumes:
+      - ${QBITTORRENT_CONFIG_VOLUME}:/config
+      - ${QBITTORRENT_FILES_VOLUME}:/downloads
+    ports:
+      - ${QBITTORRENT_PORT_1}:63231
+      - ${QBITTORRENT_PORT_1}:63231/udp
+      - ${QBITTORRENT_PORT_2}:8080
+    restart: unless-stopped
+  sonarr:
+    image: lscr.io/linuxserver/sonarr
+    container_name: sonarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+    volumes:
+      - ${SONARR_CONFIG_VOLUME}:/config
+      - ${SONARR_FILES_VOLUME}:/tv-series #optional
+    ports:
+      - ${SONARR_PORT}:8989
+    restart: unless-stopped
+  jackett:
+    image: lscr.io/linuxserver/jackett
+    container_name: jackett
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+      - AUTO_UPDATE=true #optional
+    volumes:
+      - ${JACKETT_CONFIG_VOLUME}:/config
+      - ${JACKETT_FILES_VOLUME}:/downloads
+    ports:
+      - ${JACKETT_PORT}:9117
+    restart: unless-stopped
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=1
+  radarr:
+    image: lscr.io/linuxserver/radarr
+    container_name: radarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+    volumes:
+      - ${RADARR_CONFIG_VOLUME}:/config
+      - ${RADARR_FILES_VOLUME}:/tv-films
+      - ${RADARR_TORRENTED_FILES_VOLUME}:/downloads
+    ports:
+      - ${RADARR_PORT}:7878
+    restart: unless-stopped
+  plex:
+    image: linuxserver/plex
+    network_mode: host
+    container_name: plex
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - VERSION=docker
+    volumes:
+      - ${PLEX_FILMS_VOLUME}:/tv-films
+      - ${PLEX_SERIES_VOLUME}:/tv-series
+      - ${PLEX_CONFIG_VOLUME}:/config
+    restart: unless-stopped
+  tautulli:
+    image: ghcr.io/linuxserver/tautulli
+    container_name: tautulli
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+    volumes:
+      - ${TAUTULLI_CONFIG_VOLUME}:/config
+    ports:
+      - ${TAUTULLI_PORT}:8181
+    restart: unless-stopped
+  portainer:
+    image: portainer/portainer
+    container_name: portainer
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${PORTAINER_CONFIG}
+    ports:
+      - ${PORTAINER_PORT}:9000

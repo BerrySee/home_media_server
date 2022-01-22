@@ -1,0 +1,8 @@
+configs/*
+docker-server.yaml
+env.sh
+filename.sh
+svc_list
+test
+tunnels/*
+.env
